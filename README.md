@@ -1,5 +1,5 @@
 # NEXUS - Live Biometric Fitness Dashboard
-**Student Name:** [YOUR NAME HERE]
+**Student Name:** Divyom Singh
 **Course:** MAT496 Monsoon 2025
 
 ## 🔴 Live Demo

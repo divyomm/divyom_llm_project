@@ -40,8 +40,8 @@ Unlike standard static workout generators, NEXUS connects to the **API-Ninjas Fi
 
 1.  **Clone the Repository:**
     ```bash
-    git clone [https://github.com/](https://github.com/)[YOUR_USERNAME]/capstone-template.git
-    cd capstone-template
+    git clone
+    cd divyom_llm_project
     ```
 
 2.  **Install Dependencies:**

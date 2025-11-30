@@ -43,13 +43,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. LIVE API FUNCTION (WITH SAFETY NET) ---
+# --- 3. LIVE API FUNCTION ---
 def fetch_live_exercises(muscle, difficulty, equip_choice, api_key):
     if not api_key: return []
     
     api_url = 'https://api.api-ninjas.com/v1/exercises'
     
-    # 1. Try to get data from API
     try:
         response = requests.get(
             api_url, 
@@ -71,15 +70,13 @@ def fetch_live_exercises(muscle, difficulty, equip_choice, api_key):
                 elif equip_choice == "Gym" and eq_type in ["barbell", "cable", "machine", "e-z_curl_bar", "other"]:
                     data.append(ex)
                     
-            # If we found matches, return them
             if len(data) > 0:
                 return data[:5]
 
     except:
-        pass # If API fails, fall through to backup
+        pass 
 
-    # 2. SAFETY NET (Backup Data if API returns nothing or crashes)
-    # This ensures the table NEVER looks empty
+    # Safety Net
     fallback_data = [
         {"name": "Barbell Bench Press", "equipment": "barbell", "difficulty": difficulty},
         {"name": "Incline Dumbbell Fly", "equipment": "dumbbell", "difficulty": difficulty},
@@ -89,13 +86,26 @@ def fetch_live_exercises(muscle, difficulty, equip_choice, api_key):
     ]
     return fallback_data
 
-# --- 4. LOGIC ENGINES ---
+# --- 4. LOGIC ENGINES (FIXED BMI LOGIC) ---
 def get_metrics(weight, height, goal, duration):
+    # Correct BMI Calculation
     bmi = round(weight / ((height/100)**2), 1)
+    
+    # Correct Categories
+    if bmi < 18.5:
+        bmi_label = "Underweight"
+    elif 18.5 <= bmi < 25:
+        bmi_label = "Normal"
+    elif 25 <= bmi < 30:
+        bmi_label = "Overweight"
+    else:
+        bmi_label = "Obese" # > 30
+
     if goal == "Strength": cals, intensity = int(duration * 4.5), "High 🔥"
     elif goal == "Endurance": cals, intensity = int(duration * 7.0), "Med ⚡"
     else: cals, intensity = int(duration * 3.0), "Low 🌊"
-    return bmi, cals, intensity
+    
+    return bmi, bmi_label, cals, intensity
 
 def get_smart_volume(goal, difficulty):
     if goal == "Strength":
@@ -168,10 +178,12 @@ def main():
             real_data = fetch_live_exercises(target_muscle, difficulty, equip, api_key)
             time.sleep(0.5)
             
-            # METRICS
-            bmi, cals, inten = get_metrics(weight, height, goal, 45)
+            # 3. METRICS (Using the Fixed Logic)
+            bmi, bmi_label, cals, inten = get_metrics(weight, height, goal, 45)
+            
             c1, c2, c3, c4 = st.columns(4)
-            with c1: st.metric("BMI Score", bmi, "Normal")
+            # Display correct Label/Color
+            with c1: st.metric("BMI Score", bmi, bmi_label) 
             with c2: st.metric("Est. Burn", f"{cals}", "kCal")
             with c3: st.metric("Intensity", inten, "Zone 4")
             with c4: st.metric("API Status", "CONNECTED" if len(real_data) > 0 else "BACKUP MODE", "200 OK")
@@ -232,7 +244,10 @@ def main():
                     )
 
                 else:
-                    st.error("⚠️ API Key missing. Please enter key in sidebar.")
+                    if not api_key:
+                        st.error("⚠️ API Key missing. Please enter key in sidebar.")
+                    else:
+                        st.warning(f"No exercises found for {equip} at {difficulty} level.")
                     
                 st.markdown('</div>', unsafe_allow_html=True)
 

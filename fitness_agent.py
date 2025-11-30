@@ -40,66 +40,18 @@ st.markdown("""
         background: linear-gradient(45deg, #3B82F6, #8B5CF6);
         color: white; border: none; padding: 12px; border-radius: 12px; width: 100%;
     }
+    h4 { color: #A78BFA !important; } 
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. LIVE API FUNCTION ---
-def fetch_live_exercises(muscle, difficulty, equip_choice, api_key):
-    if not api_key: return []
-    
-    api_url = 'https://api.api-ninjas.com/v1/exercises'
-    
-    try:
-        response = requests.get(
-            api_url, 
-            headers={'X-Api-Key': api_key}, 
-            params={'muscle': muscle, 'difficulty': difficulty}
-        )
-        
-        data = []
-        if response.status_code == 200:
-            raw_data = response.json()
-            
-            # Filter by equipment
-            for ex in raw_data:
-                eq_type = ex.get('equipment', '').lower()
-                if equip_choice == "Bodyweight" and eq_type == "body_only":
-                    data.append(ex)
-                elif equip_choice == "Dumbbells" and eq_type == "dumbbell":
-                    data.append(ex)
-                elif equip_choice == "Gym" and eq_type in ["barbell", "cable", "machine", "e-z_curl_bar", "other"]:
-                    data.append(ex)
-                    
-            if len(data) > 0:
-                return data[:5]
+# --- 3. LOGIC ENGINES ---
 
-    except:
-        pass 
-
-    # Safety Net
-    fallback_data = [
-        {"name": "Barbell Bench Press", "equipment": "barbell", "difficulty": difficulty},
-        {"name": "Incline Dumbbell Fly", "equipment": "dumbbell", "difficulty": difficulty},
-        {"name": "Cable Crossover", "equipment": "cable", "difficulty": difficulty},
-        {"name": "Weighted Dips", "equipment": "other", "difficulty": difficulty},
-        {"name": "Pushups (Weighted)", "equipment": "body_only", "difficulty": difficulty}
-    ]
-    return fallback_data
-
-# --- 4. LOGIC ENGINES (FIXED BMI LOGIC) ---
 def get_metrics(weight, height, goal, duration):
-    # Correct BMI Calculation
     bmi = round(weight / ((height/100)**2), 1)
-    
-    # Correct Categories
-    if bmi < 18.5:
-        bmi_label = "Underweight"
-    elif 18.5 <= bmi < 25:
-        bmi_label = "Normal"
-    elif 25 <= bmi < 30:
-        bmi_label = "Overweight"
-    else:
-        bmi_label = "Obese" # > 30
+    if bmi < 18.5: bmi_label = "Underweight"
+    elif 18.5 <= bmi < 25: bmi_label = "Normal"
+    elif 25 <= bmi < 30: bmi_label = "Overweight"
+    else: bmi_label = "Obese"
 
     if goal == "Strength": cals, intensity = int(duration * 4.5), "High 🔥"
     elif goal == "Endurance": cals, intensity = int(duration * 7.0), "Med ⚡"
@@ -107,15 +59,25 @@ def get_metrics(weight, height, goal, duration):
     
     return bmi, bmi_label, cals, intensity
 
-def get_smart_volume(goal, difficulty):
+def get_smart_volume(goal, difficulty, bmi):
+    if bmi >= 30: return "3 Sets x 10 Reps (Low Impact)"
+    if goal == "Strength": return "4 Sets x 6-8 Reps" if difficulty != "beginner" else "3 Sets x 10 Reps"
+    elif goal == "Endurance": return "3 Sets x 15 Reps"
+    else: return "3 Sets x 60 Seconds"
+
+def generate_diet_plan(goal, weight):
     if goal == "Strength":
-        if difficulty == "beginner": return "3 Sets x 5 Reps"
-        return "5 Sets x 5 Reps (Heavy)"
+        p, c, f = int(weight * 2.2), int(weight * 3.0), int(weight * 0.8)
+        meals = [["Breakfast", "Oats + Whey"], ["Lunch", "Chicken + Rice"], ["Dinner", "Lean Beef + Veg"]]
     elif goal == "Endurance":
-        if difficulty == "beginner": return "3 Sets x 12 Reps"
-        return "4 Sets x 15-20 Reps"
-    else: 
-        return "3 Sets x 60 Seconds"
+        p, c, f = int(weight * 1.6), int(weight * 5.0), int(weight * 0.8)
+        meals = [["Breakfast", "Banana + Toast"], ["Lunch", "Pasta + Turkey"], ["Dinner", "Fish + Quinoa"]]
+    else:
+        p, c, f = int(weight * 2.0), int(weight * 1.5), int(weight * 0.9)
+        meals = [["Breakfast", "Eggs + Spinach"], ["Lunch", "Chicken Salad"], ["Dinner", "White Fish + Greens"]]
+    return meals, p, c, f
+
+# --- 4. VISUALIZATION ---
 
 def create_radar_chart(goal):
     labels = ['Cardio', 'Upper', 'Lower', 'Core', 'Flex']
@@ -129,18 +91,54 @@ def create_radar_chart(goal):
     angles += angles[:1]
     
     fig, ax = plt.subplots(figsize=(4, 4), subplot_kw=dict(polar=True))
-    fig.patch.set_alpha(0)
-    ax.patch.set_alpha(0)
+    fig.patch.set_alpha(0); ax.patch.set_alpha(0)
     ax.fill(angles, stats, color='#818CF8', alpha=0.3)
     ax.plot(angles, stats, color='#C084FC', linewidth=2)
-    ax.set_yticks([])
-    ax.spines['polar'].set_color('#334155')
-    ax.grid(color='#334155', linestyle='--')
-    ax.set_xticks(angles[:-1])
+    ax.set_yticks([]); ax.spines['polar'].set_color('#334155')
+    ax.grid(color='#334155', linestyle='--'); ax.set_xticks(angles[:-1])
     ax.set_xticklabels(labels, color='#E2E8F0', size=9)
     return fig
 
-# --- 5. MAIN LAYOUT ---
+def create_donut_chart(p, c, f):
+    labels = ['Pro', 'Carb', 'Fat']
+    sizes = [p, c, f]
+    colors = ['#38BDF8', '#C084FC', '#34D399']
+    
+    # Chart with explicit size to fit card
+    fig, ax = plt.subplots(figsize=(4, 2))
+    fig.patch.set_alpha(0); ax.patch.set_alpha(0)
+    wedges, texts, autotexts = ax.pie(sizes, labels=labels, autopct='%1.0f%%', 
+                                      colors=colors, startangle=90, 
+                                      textprops={'color':"white", 'fontsize': 8}, pctdistance=0.80)
+    centre_circle = plt.Circle((0,0),0.60,fc='#1E2530') # Match card background
+    fig.gca().add_artist(centre_circle)
+    return fig
+
+# --- 5. LIVE API FUNCTION ---
+def fetch_live_exercises(muscle, difficulty, equip_choice, api_key):
+    if not api_key: return []
+    api_url = 'https://api.api-ninjas.com/v1/exercises'
+    try:
+        response = requests.get(
+            api_url, 
+            headers={'X-Api-Key': api_key}, 
+            params={'muscle': muscle, 'difficulty': difficulty}
+        )
+        if response.status_code == 200:
+            data = response.json()
+            filtered = []
+            for ex in data:
+                eq = ex.get('equipment', '').lower()
+                if equip_choice == "Bodyweight" and eq == "body_only": filtered.append(ex)
+                elif equip_choice == "Dumbbells" and eq == "dumbbell": filtered.append(ex)
+                elif equip_choice == "Gym": filtered.append(ex) # Gym accepts all
+            
+            if not filtered: return data[:3] # Fallback to top 3 if filter is too strict
+            return filtered[:3] 
+        return []
+    except: return []
+
+# --- 6. MAIN LAYOUT ---
 def main():
     
     with st.sidebar:
@@ -151,14 +149,12 @@ def main():
         
         weight = st.slider("Weight (kg)", 40, 150, 70)
         height = st.slider("Height (cm)", 120, 220, 175)
-        
-        st.markdown("---")
         goal = st.selectbox("Focus", ["Strength", "Endurance", "Mobility"])
-        difficulty = st.select_slider("Experience Level", ["beginner", "intermediate", "expert"])
+        difficulty = st.select_slider("Level", ["beginner", "intermediate", "expert"])
         equip = st.selectbox("Equipment Access", ["Bodyweight", "Dumbbells", "Gym"])
         
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("FETCH LIVE DATA 📡"):
+        if st.button("RUN SIMULATION 📡"):
             st.session_state['run'] = True
 
     st.markdown('<h1 class="gradient-text">NEXUS DASHBOARD</h1>', unsafe_allow_html=True)
@@ -166,93 +162,98 @@ def main():
     st.markdown("---")
 
     if 'run' in st.session_state and st.session_state['run']:
-        with st.spinner("Connecting to API-Ninjas Database..."):
+        with st.spinner("Connecting to API & Analyzing Biomechanics..."):
             
-            # 1. Determine Target Muscle
-            target_muscle = "quadriceps" 
-            if goal == "Strength": target_muscle = "chest"
-            elif goal == "Endurance": target_muscle = "hamstrings"
-            elif goal == "Mobility": target_muscle = "abdominals"
+            # 1. CALCULATE METRICS
+            bmi, bmi_label, cals, inten = get_metrics(weight, height, goal, 45)
+            meals, p, c, f = generate_diet_plan(goal, weight)
             
-            # 2. FETCH REAL DATA
-            real_data = fetch_live_exercises(target_muscle, difficulty, equip, api_key)
             time.sleep(0.5)
             
-            # 3. METRICS (Using the Fixed Logic)
-            bmi, bmi_label, cals, inten = get_metrics(weight, height, goal, 45)
-            
+            # --- ROW 1: METRICS ---
             c1, c2, c3, c4 = st.columns(4)
-            # Display correct Label/Color
-            with c1: st.metric("BMI Score", bmi, bmi_label) 
+            with c1: st.metric("BMI Score", f"{bmi}", bmi_label)
             with c2: st.metric("Est. Burn", f"{cals}", "kCal")
-            with c3: st.metric("Intensity", inten, "Zone 4")
-            with c4: st.metric("API Status", "CONNECTED" if len(real_data) > 0 else "BACKUP MODE", "200 OK")
+            with c3: st.metric("Target Protein", f"{p}g", "Daily")
+            # We don't know API status yet, placeholder
             
             st.markdown("<br>", unsafe_allow_html=True)
 
-            col_graph, col_table = st.columns([1, 2])
+            # --- ROW 2: VISUALS ---
+            col_left, col_right = st.columns([1, 1])
             
-            with col_graph:
+            # Left Card: Radar Chart
+            with col_left:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-                st.markdown("#### 🎯 Load Balance")
-                fig = create_radar_chart(goal)
-                st.pyplot(fig)
+                st.markdown("#### 🎯 Training Vectors")
+                fig1 = create_radar_chart(goal)
+                st.pyplot(fig1)
                 st.markdown('</div>', unsafe_allow_html=True)
 
-            with col_table:
+            # Right Card: Nutrition (Stacked Layout)
+            with col_right:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-                st.markdown(f"#### 📋 REAL API DATA: {target_muscle.upper()}")
+                st.markdown("#### 🥗 Nutrition Fuel")
+                # Stacked: Chart Top, Table Bottom
+                fig3 = create_donut_chart(p, c, f)
+                st.pyplot(fig3, use_container_width=False)
+                st.dataframe(pd.DataFrame(meals, columns=["Meal", "Plan"]), hide_index=True, use_container_width=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+
+            # --- ROW 3: FULL WEEKLY SPLIT GENERATOR ---
+            st.markdown("### 🗓️ WEEKLY LIVE PROTOCOL")
+            
+            # Define the Split (Day Name, Muscle 1, Muscle 2)
+            weekly_split = [
+                ("MONDAY: PUSH (Chest + Triceps)", "chest", "triceps"),
+                ("TUESDAY: PULL (Back + Biceps)", "middle_back", "biceps"),
+                ("WEDNESDAY: LEGS (Quads + Hams)", "quadriceps", "hamstrings"),
+                ("THURSDAY: SHOULDERS & CORE", "shoulders", "abdominals")
+            ]
+            
+            api_status_ok = False 
+
+            # Loop through days and generate cards
+            for day_name, m1, m2 in weekly_split:
                 
-                if real_data:
-                    clean_data = []
+                with st.container():
+                    st.markdown(f'<div class="glass-card">', unsafe_allow_html=True)
+                    st.markdown(f"#### {day_name}")
                     
-                    # LOGIC LOOP
-                    for ex in real_data:
-                        vid_link = f"https://www.youtube.com/results?search_query={ex['name'].replace(' ','+')}+exercise"
+                    # Fetch data for both muscles
+                    data_m1 = fetch_live_exercises(m1, difficulty, equip, api_key)
+                    data_m2 = fetch_live_exercises(m2, difficulty, equip, api_key)
+                    combined_day = data_m1 + data_m2
+                    
+                    if combined_day:
+                        api_status_ok = True
+                        clean_data = []
+                        for ex in combined_day:
+                            vid_link = f"https://www.youtube.com/results?search_query={ex['name'].replace(' ','+')}+exercise"
+                            vol = get_smart_volume(goal, difficulty, bmi)
+                            
+                            clean_data.append([
+                                ex['name'].title(),
+                                ex['muscle'].upper(),
+                                vol,
+                                vid_link
+                            ])
                         
-                        # INJECT SETS & REPS
-                        volume = get_smart_volume(goal, difficulty)
-                        
-                        clean_data.append([
-                            ex['name'].title(),
-                            volume,
-                            ex['equipment'].title().replace('_',' '),
-                            vid_link
-                        ])
-                    
-                    df = pd.DataFrame(clean_data, columns=["Exercise", "Sets & Reps", "Equip", "Video"])
-                    
-                    # Display Table
-                    st.dataframe(
-                        df, 
-                        use_container_width=True, 
-                        hide_index=True,
-                        column_config={
-                            "Video": st.column_config.LinkColumn("Demo", display_text="Watch ▶"),
-                            "Sets & Reps": st.column_config.TextColumn("Prescribed Volume"),
-                        }
-                    )
-                    
-                    # DOWNLOAD BUTTON
-                    csv = df.to_csv(index=False)
-                    st.download_button(
-                        "📥 Download CSV Report",
-                        csv,
-                        "nexus_api_data.csv",
-                        "text/csv",
-                        key='download-csv'
-                    )
-
-                else:
-                    if not api_key:
-                        st.error("⚠️ API Key missing. Please enter key in sidebar.")
+                        df = pd.DataFrame(clean_data, columns=["Exercise", "Target", "Sets/Reps", "Video"])
+                        st.dataframe(
+                            df, use_container_width=True, hide_index=True,
+                            column_config={"Video": st.column_config.LinkColumn("Demo", display_text="Watch ▶")}
+                        )
                     else:
-                        st.warning(f"No exercises found for {equip} at {difficulty} level.")
-                    
-                st.markdown('</div>', unsafe_allow_html=True)
+                        st.warning("⚠️ API Key missing or no exercises found.")
+                        
+                    st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Update status metric based on loop result
+            with c4: st.metric("System Status", "ONLINE" if api_status_ok else "OFFLINE", "200 OK")
 
     else:
-        st.info("👈 Enter your API-Ninjas Key and click Fetch to pull live data.")
+        st.info("👈 Enter API Key and Click Run to Initialize.")
 
 if __name__ == "__main__":
     main()

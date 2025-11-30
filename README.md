@@ -1,9 +1,9 @@
 # NEXUS - Live Biometric Fitness Dashboard
-**Student Name:** Divyom Singh
+**Student Name:** Divyom Singh  
 **Course:** MAT496 Monsoon 2025
 
 ## 🔴 Live Demo
-**[PASTE YOUR STREAMLIT APP LINK HERE]**
+
 
 ## 📖 Project Description
 **NEXUS** is a data-driven fitness intelligence agent designed to generate medically accurate workout protocols using live external data.

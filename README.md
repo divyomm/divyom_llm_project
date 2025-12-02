@@ -2,62 +2,40 @@
 **Student Name:** Divyom Singh  2210110266   
 **Course:** MAT496 Monsoon 2025
 
-## 🔴 Live Demo
+## Overview
+NEXUS PRO is an intelligent fitness agent designed to solve the problem of generic, non-personalized workout advice. It acts as a biomechanical consultant that accepts specific user constraints (biometrics, equipment access, experience level) and outputs a medically accurate, data-driven action plan.
+
+My project processes user inputs through a custom logic engine, fetches real-time data from an external source (API-Ninjas), and presents the information in a highly structured format (Pandas DataFrames, Radar Charts, and CSV reports). It calculates metabolic baselines, visualizes training load vectors, and generates a complete weekly split protocol.
+
+## Reason for picking up this project
+I chose this project to demonstrate how an "Intelligent Agent" can act as a bridge between raw data and human decision-making. This aligns with the MAT496 course content in several key ways:
+
+1.  **Structured Output:** A core theme of the course was formatting unstructured data. My agent takes raw API JSON responses and restructures them into clean, human-readable Pandas DataFrames and visual Charts.
+2.  **Tool Calling:** Similar to how LLMs call tools, my agent uses Python `requests` to call an external tool (The API-Ninjas Fitness Database) to retrieve information it does not possess internally.
+3.  **Agentic Workflow:** The system follows a State-Node logic flow: Input -> Biometric Processing -> API Data Retrieval -> Volume Injection -> Final Visualization.
+4.  **Creativity:** I moved beyond simple text generation to build a "Multimodal Output" dashboard (Text + Data Tables + Visual Graphs + Downloadable Files), solving a real-world problem with high reliability.
+
+## Video Summary Link:
+https://drive.google.com/file/d/1i90WM22nurcOXyorpGc6Fi8QAsEmMwIM/view?usp=sharing
+
+*(Note: The video demonstrates the agent taking inputs (Weight, Goal), executing the logic, and producing the output (Charts/Tables) as per submission requirements.)*
+
+## Live Demo Link:
 https://divyomm-divyom-llm-project-fitness-agent-yiajar.streamlit.app/
 
+## Plan
+I planned to execute these steps to complete my project. All steps have been executed and committed to the repository history.
 
-## 📖 Project Description
-**NEXUS** is a data-driven fitness intelligence agent designed to generate medically accurate workout protocols using live external data.
+- [DONE] **Step 1: Setup & Core Logic:** Forked repository, initialized Streamlit app, and built the basic Python functions to handle user inputs (Weight, Goal, Equipment).
+- [DONE] **Step 2: Biometric Engine:** Implemented the mathematical logic to calculate BMI, Caloric Burn, and Safety Protocols (e.g., detecting obesity and adjusting intensity).
+- [DONE] **Step 3: User Interface Overhaul:** Injected custom CSS to create a "Dark Mode Glassmorphism" UI for a professional, modern aesthetic.
+- [DONE] **Step 4: External Tool Integration:** Connected the agent to the **API-Ninjas Fitness API** to replace hardcoded data with live, real-time exercise databases.
+- [DONE] **Step 5: Smart Volume Logic:** Built an algorithm to inject specific "Sets & Reps" into the raw API data based on the user's specific training focus (Strength vs. Endurance).
+- [DONE] **Step 6: Visualization:** Integrated Matplotlib to generate dynamic Radar Charts (Load Balance) and Donut Charts (Nutrition) that update in real-time.
+- [DONE] **Step 7: Final Polish & Documentation:** Cleaned up code, verified `requirements.txt` for cloud deployment, recorded demo video, and finalized the README.
 
-Unlike standard static workout generators, NEXUS connects to the **API-Ninjas Fitness Database** to fetch real-time exercise metadata. It then applies a custom **"Smart Volume Algorithm"** to inject specific set/rep schemes based on the user's biomechanical goals (Strength vs. Endurance) and safety requirements (BMI-based impact adjustment).
+## Conclusion:
+I had planned to achieve a fully functional, crash-proof fitness agent that provides more than just text output. I think I have **achieved the conclusion satisfactorily**.
 
-## 🚀 Key Features
-
-### 1. Live Data Stream (External API)
-* **Integration:** Connects to the **API-Ninjas** REST API.
-* **Function:** Dynamically fetches exercises based on target muscle (e.g., Chest, Quadriceps) and difficulty level.
-* **Smart Filtering:** Uses Python logic to filter raw API results by equipment availability (ensuring "Bodyweight" users never see machine exercises).
-
-### 2. Algorithmic Logic Engines
-* **Biometric Safety Net:** Automatically calculates BMI and categorizes health risk (Normal vs. Obese).
-* **Adaptive Protocol:** If a user is classified as "Obese" (>30 BMI), the system overrides standard hypertrophy protocols with "Low Impact" volume settings to prevent joint injury.
-* **Smart Volume Injection:** Assigns specific load vectors (e.g., "5 Sets x 5 Reps" for Strength) to the raw exercise data.
-
-### 3. Visual Data Analytics
-* **Vector Analysis:** Uses **Matplotlib** to generate a real-time Radar Chart visualizing the training load distribution (Cardio vs. Strength vs. Mobility).
-* **UI Design:** Features a custom "Dark Mode Glassmorphism" interface built with CSS injection.
-
-### 4. Interactive Elements
-* **Smart Links:** Auto-generates clickable **YouTube Search Queries** for every exercise.
-* **Data Export:** Allows users to download their customized protocol as a `.csv` file for offline tracking.
-
-## 🛠️ Tech Stack
-* **Frontend:** Python Streamlit
-* **Data Handling:** Pandas (DataFrames & CSV Export)
-* **Visualization:** Matplotlib (Radar Charts)
-* **Networking:** Requests (API HTTP Calls)
-
-## ⚙️ How to Run Locally
-
-1.  **Clone the Repository:**
-    ```bash
-    git clone
-    cd divyom_llm_project
-    ```
-
-2.  **Install Dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-3.  **Run the Application:**
-    ```bash
-    streamlit run fitness_agent.py
-    ```
-
-4.  **API Key Setup:**
-    * The app requires a free **API-Ninjas Key** to fetch data.
-    * Enter the key in the sidebar when the app launches.
-
-## 🎥 Video Walkthrough
-https://drive.google.com/file/d/1i90WM22nurcOXyorpGc6Fi8QAsEmMwIM/view?usp=sharing
+**Reason for satisfaction:**
+The final application successfully integrates multiple technologies (Streamlit, Pandas, Matplotlib, Requests) into a cohesive dashboard. It handles edge cases (like high BMI) with safety logic, fetches real data from the internet without errors, and provides a level of visual polish that exceeds a standard script. The "Smart Volume" algorithm successfully bridges the gap between raw data and actionable advice.

@@ -1,8 +1,9 @@
 # NEXUS - Live Biometric Fitness Dashboard
-**Student Name:** Divyom Singh  
+**Student Name:** Divyom Singh  2210110266   
 **Course:** MAT496 Monsoon 2025
 
 ## 🔴 Live Demo
+https://divyomm-divyom-llm-project-fitness-agent-yiajar.streamlit.app/
 
 
 ## 📖 Project Description

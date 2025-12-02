@@ -59,3 +59,4 @@ Unlike standard static workout generators, NEXUS connects to the **API-Ninjas Fi
     * Enter the key in the sidebar when the app launches.
 
 ## 🎥 Video Walkthrough
+https://drive.google.com/file/d/1i90WM22nurcOXyorpGc6Fi8QAsEmMwIM/view?usp=sharing
